@@ -6,7 +6,7 @@ Customer support agents at SaaS companies handle high volumes of repetitive inqu
 
 ## Model Choice
 
-I used **Google Gemini (default configured as gemini-3-pro in this codebase)** via the Google AI Studio API. I chose Gemini because:
+I used **Google Gemini via the Google AI Studio API**. In code, the requested default model is `gemini-3-pro`, and in the actual run it resolved to `models/gemini-2.5-flash` based on model availability. I chose Gemini because:
 - It is available through Google AI Studio and easy to prototype with quickly.
 - It provides strong writing quality for customer-support style drafts.
 - The app includes model resolution and fallback logic, so if an alias is unavailable in the current API version, it can still select an available model for `generateContent`.
@@ -15,24 +15,27 @@ I did not run a full cross-provider benchmark for this assignment; the focus was
 
 ## Baseline vs. Final Design
 
-**Baseline (Prompt V1):** A minimal instruction ("You are a customer support agent. Write a reply.") with no constraints. Results were functional but inconsistent: some responses invented account details, others were overly long, and the social engineering test case produced an unsafe response that partially complied with the request.
+**Baseline (Prompt V1):** A minimal instruction ("You are a customer support agent. Write a reply.") with no constraints.
 
-**Final (Prompt V3):** A structured prompt with a defined persona, explicit four-step response structure (acknowledge, address, next steps, close), and specific rules about fabrication, credential sharing, word limits, and language handling. Key improvements across the 7-case evaluation set:
+**Final (Prompt V3):** A structured prompt with a defined persona, explicit four-step response structure (acknowledge, address, next steps, close), and specific rules about fabrication, credential sharing, word limits, and language handling.
+
+I ran all 7 evaluation cases across V1/V2/V3 (`eval_summary_20260405_013911.md`). Evidence from that real run:
 
 | Dimension | V1 (Baseline) | V3 (Final) |
 |-----------|---------------|------------|
-| Tone consistency | Mixed — sometimes robotic, sometimes overly casual | Consistently professional and empathetic |
-| Fabrication | Occasionally invented billing details or error causes | Reliably avoids speculation |
-| Social engineering | Partially complied with the request | Properly refused and redirected to verification |
-| Response length | 50-300 words, unpredictable | Consistently 80-140 words |
-| Bilingual handling | Ignored non-English content | Acknowledged and responded appropriately |
-| Structure | Varied across cases | Predictable 4-part format |
+| Average response length | ~186 words (often verbose; one case 322 words) | ~100 words (more concise and review-friendly) |
+| Structure consistency | Polite but variable structure | Consistent acknowledge → address → next steps → close pattern |
+| Billing behavior | Included speculative causes and implied account access | More restrained and action-oriented without over-claiming |
+| Social engineering case | Refused to share secrets (safe) but long | Refused to share secrets (safe) and much shorter |
+| Mixed-language handling | Addressed request but mostly in English | Better controlled tone and clearer troubleshooting steps |
 
-The intermediate version (V2) addressed the most critical issues — safety guardrails and fabrication — while V3 refined consistency, length, and structure.
+The intermediate version (V2) improved safety but still tended to be long (average ~163 words). V3 produced the best balance of safety, clarity, and brevity for a human-in-the-loop support workflow.
 
 ## Where the Prototype Still Fails
 
 The prototype still requires human review in several areas. First, it cannot verify any account-specific information — it does not have access to billing systems, user databases, or ticket history. Any response that references specific account details (subscription status, payment amounts, error logs) must be verified by the agent. Second, for highly emotional or escalated situations, the drafted tone is professional but sometimes reads as slightly formulaic; a skilled agent would add more genuine personalization. Third, the system has no memory of prior interactions, so it cannot reference previous tickets or ongoing issues. Finally, while the social engineering case is handled well with the current prompt, adversarial inputs could potentially bypass the guardrails with more sophisticated phishing language.
+
+Also, my quick heuristic score in the evaluation script is intentionally simple (keyword-based) and can miss nuance, so final quality judgments should rely on human review plus scenario-specific checks.
 
 ## Deployment Recommendation
 
