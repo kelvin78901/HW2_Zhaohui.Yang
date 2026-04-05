@@ -65,13 +65,5 @@ Outputs:
 - `eval_summary_YYYYMMDD_HHMMSS.json`
 - `eval_summary_YYYYMMDD_HHMMSS.md`
 
-## Repository Structure
-
-| File | Description |
-|------|-------------|
-| `README.md` | Project overview and setup instructions |
-| `app.py` | Main Python prototype |
-| `run_eval_summary.py` | Runs eval set across prompt versions and generates summary artifacts |
-| `prompts.md` | Prompt iteration history |
-| `eval_set.json` | Evaluation test cases |
-| `report.md` | Final report |
+## VIDEO LINK
+> https://vimeo.com/1180215109?share=copy&fl=sv&fe=ci
