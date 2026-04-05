@@ -10,7 +10,10 @@ Customer message:
 ```
 
 ### Notes
-Starting with a minimal prompt to establish a baseline. No constraints on tone, length, or behavior.
+Starting with a minimal prompt to establish a baseline. No constraints on tone, length, structure, or safety behavior.
+
+### Evidence from actual run (2026-04-05)
+Using the evaluation run (`eval_summary_20260405_013911.md`), V1 produced very verbose replies (average ~186 words; one response reached 322 words on the angry-customer case). It was generally polite, but the billing response speculated about possible causes and implied account lookup without verification, showing why stronger guardrails were needed.
 
 ---
 
@@ -35,10 +38,10 @@ Customer message:
 ```
 
 ### What changed and why
-Added a company name and agent identity to make responses feel realistic rather than generic. Added explicit guidelines about not fabricating information, handling sensitive data, and social engineering — the baseline version had no guardrails and would sometimes invent account details or comply with unsafe requests.
+Added company + agent identity and explicit safety/quality guardrails (no fabrication, no sensitive data sharing, social engineering refusal, clear next steps). This change was driven by V1 outputs that were often too long and occasionally overconfident (e.g., implying account access or speculating on billing causes).
 
 ### What improved, stayed the same, or got worse
-Tone improved significantly — responses became more professional and grounded. The social engineering test case improved from a potential compliance to a proper refusal. Responses became slightly longer due to the added structure, which is acceptable for support emails. Edge cases (vague messages, angry customers) were handled better with the empathy guideline.
+Compared with V1 in the real run, V2 became more controlled and safer in tone and behavior, especially on sensitive/security scenarios. Average length dropped from ~186 words to ~163 words, but some cases were still overly long (e.g., password reset ~194 words, social engineering ~248 words), so concision was still an issue.
 
 ---
 
@@ -66,7 +69,7 @@ Customer message:
 ```
 
 ### What changed and why
-Added explicit structure (acknowledge, address, next steps, close) to make outputs more consistent across different input types. Added a word limit because Version 2 sometimes produced unnecessarily long responses. Added language-matching guidance after the bilingual test case produced inconsistent results. Added formality-matching to handle the range from casual ("hey things aren't working") to formal messages. Made the social engineering rule more specific with a redirect URL.
+Added explicit response structure (acknowledge → address → next steps → close), a tighter word-limit instruction, and better language/formality handling. This revision targeted the main V2 gap from the run: useful content but frequent over-length responses that increase review time for support agents.
 
 ### What improved, stayed the same, or got worse
-Consistency improved — all 7 test cases now follow a predictable structure, making agent review faster. The word limit kept responses focused without cutting important content. The bilingual case improved noticeably. The angry customer response stayed roughly the same quality (already good in V2). One minor trade-off: the structured format occasionally feels slightly formulaic on very simple questions like the feature request, but the consistency gain outweighs this.
+In the run, V3 was the most concise and consistent version (average ~100 words vs. V2 ~163 and V1 ~186) while still handling all 7 cases. Safety behavior stayed strong (especially social-engineering refusal), but one trade-off remained: some simple cases can sound slightly template-like, and heuristic scoring can undercount quality when a valid response does not use expected keywords.
